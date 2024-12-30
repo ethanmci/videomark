@@ -33,6 +33,7 @@
 <style lang="scss">
   section {
     margin: 48px 0 0;
+    min-height: 500px; /* min-height to allow accurate observer detection for lazy loading */
   }
 
   [role='note'] {

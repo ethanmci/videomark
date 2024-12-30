@@ -17,24 +17,24 @@
 
   const callback = (entries) => {
     entries.forEach((e) => {
-      console.log('e', e);
+      if (e.isIntersecting) {
+        const container = e.target;
+        const { chartId, cache } = /** @type {HTMLElement} */ (container).dataset;
+        const _cache = Number(cache);
 
-      const container = e.target;
-      const { chartId, cache } = /** @type {HTMLElement} */ (container).dataset;
-      const _cache = Number(cache);
+        const chart = sdk.createChart({
+          chartId,
+          height: 500,
+          // `_cache` can be `undefined`, `0`, `-1` or any positive integer (in hours, not seconds,
+          // unlike the `maxDataAge` option.) Default: 24 hours
+          // eslint-disable-next-line no-nested-ternary
+          maxDataAge: Number.isNaN(_cache) ? 86400 : _cache > 0 ? _cache * 3600 : _cache,
+          showAttribution: false,
+        });
 
-      const chart = sdk.createChart({
-        chartId,
-        height: 500,
-        // `_cache` can be `undefined`, `0`, `-1` or any positive integer (in hours, not seconds,
-        // unlike the `maxDataAge` option.) Default: 24 hours
-        // eslint-disable-next-line no-nested-ternary
-        maxDataAge: Number.isNaN(_cache) ? 86400 : _cache > 0 ? _cache * 3600 : _cache,
-        showAttribution: false,
-      });
-
-      chart.render(container);
-      observer.unobserve(container);
+        chart.render(container);
+        observer.unobserve(container);
+      }
     });
   };
 
