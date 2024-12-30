@@ -7,17 +7,19 @@
 -->
 <script>
   import ChartsEmbedSDK from '@mongodb-js/charts-embed-dom';
-  import { onMount } from 'svelte';
-  import { afterNavigate } from '$app/navigation';
+  import { onDestroy, onMount } from 'svelte';
+  import { afterNavigate, beforeNavigate } from '$app/navigation';
 
   let sdk;
+  let observer;
 
-  onMount(() => {
-    sdk = new ChartsEmbedSDK({ baseUrl: 'https://charts.mongodb.com/charts-sodium-ejpey' });
-  });
+  const options = { threshold: 0 };
 
-  afterNavigate(() => {
-    document.querySelectorAll('[data-chart-id]').forEach((container) => {
+  const callback = (entries) => {
+    entries.forEach((e) => {
+      console.log('e', e);
+
+      const container = e.target;
       const { chartId, cache } = /** @type {HTMLElement} */ (container).dataset;
       const _cache = Number(cache);
 
@@ -32,6 +34,29 @@
       });
 
       chart.render(container);
+      observer.unobserve(container);
     });
+  };
+
+  onMount(() => {
+    observer = new IntersectionObserver(callback, options);
+    sdk = new ChartsEmbedSDK({ baseUrl: 'https://charts.mongodb.com/charts-sodium-ejpey' });
+  });
+
+  afterNavigate(() => {
+    // observing all chart containers on the current page
+    document.querySelectorAll('[data-chart-id]').forEach((container) => {
+      observer.observe(container);
+    });
+  });
+
+  beforeNavigate(() => {
+    document.querySelectorAll('[data-chart-id]').forEach((container) => {
+      observer.unobserve(container);
+    });
+  });
+
+  onDestroy(() => {
+    if (observer) observer.disconnect();
   });
 </script>
